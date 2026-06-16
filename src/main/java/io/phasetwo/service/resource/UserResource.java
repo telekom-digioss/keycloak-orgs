@@ -109,6 +109,18 @@ public class UserResource extends OrganizationAdminResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response switchActiveOrganization(@Valid SwitchOrganization body) {
+    // FAST Custom-Extend: Start
+    //
+    // Disabled by default. Set KEYCLOAK_ORGS_SWITCH_ORG_ENABLED=true to enable.
+    // WARNING: Enabling this bypasses per-org IDP re-authentication and omits org-member
+    // attributes (e.g. orgaccess_* for party selection) from the new token. Only enable if
+    // your deployment does not use per-org IDPs and does not require party selection.
+    if (!"true".equalsIgnoreCase(System.getenv("KEYCLOAK_ORGS_SWITCH_ORG_ENABLED"))) {
+      throw new NotAllowedException(
+          "switch-organization is disabled. Set KEYCLOAK_ORGS_SWITCH_ORG_ENABLED=true to enable, "
+              + "or perform a logout and re-login to change the active organization.");
+    }
+    // FAST Custom-Extend: End
 
     OrganizationModel organization = orgs.getOrganizationById(realm, body.getId());
 
